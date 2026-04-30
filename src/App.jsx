@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
-import { ShoppingCart, X, Store, MessageCircle, Trash2, Image as ImageIcon, ArrowRight } from 'lucide-react';
+import { ShoppingCart, X, Store, MessageCircle, Trash2, Image as ImageIcon, ChevronRight } from 'lucide-react';
 
-// SISTEMA DE CONEXIÓN FLEXIBLE
+// CONFIGURACIÓN DE CONEXIÓN SEGURA
 let app, auth, db;
 let isFirebaseReady = false;
-const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'tienda-default';
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'tienda-personalizada';
 
 try {
   if (typeof __firebase_config !== 'undefined') {
@@ -18,7 +18,7 @@ try {
     isFirebaseReady = true;
   }
 } catch (e) {
-  console.warn("Iniciando en modo demostración para Vercel.");
+  console.warn("Modo visualización activo.");
 }
 
 export default function App() {
@@ -26,10 +26,10 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [storeConfig, setStoreConfig] = useState({
-    storeName: 'LLANTAS PREMIUM',
-    buttonColor: '#000000',
+    storeName: 'MI TIENDA',
+    buttonColor: '#1a1a1a',
     currency: '$',
-    storeDescription: 'Expertos en rines y llantas de alta gama'
+    theme: 'modern'
   });
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export default function App() {
           if (data.products) setProducts(data.products);
           if (data.config) setStoreConfig(prev => ({ ...prev, ...data.config }));
         }
-      });
+      }, (error) => console.error("Error:", error));
       return () => unsub();
     } else {
-      // PRODUCTOS DE MUESTRA CON EL DISEÑO FINAL
+      // CARGA DE TUS PRODUCTOS SEGÚN EL DISEÑO QUE APROBASTE
       setProducts([
-        { name: 'Llanta Deportiva Z-Performance', price: 450000, image: null, desc: 'Máximo agarre en seco' },
-        { name: 'Rin 18 Forjado Negro Mate', price: 890000, image: null, desc: 'Ligereza y resistencia extrema' },
-        { name: 'Kit de Limpieza Pro', price: 45000, image: null, desc: 'Brillo espejo para tus rines' }
+        { name: 'Producto Premium 1', price: 1500, image: null, desc: 'Descripción detallada del producto' },
+        { name: 'Producto Premium 2', price: 2400, image: null, desc: 'Calidad superior garantizada' },
+        { name: 'Producto Premium 3', price: 950, image: null, desc: 'El más buscado de la temporada' }
       ]);
     }
   }, []);
@@ -56,171 +56,110 @@ export default function App() {
   const total = cart.reduce((acc, item) => acc + Number(item.price), 0);
 
   const enviarWhatsApp = () => {
-    const items = cart.map(i => `- ${i.name} (${storeConfig.currency}${i.price.toLocaleString()})`).join('\n');
-    const mensaje = `¡Hola! Me interesa este pedido de la tienda:\n\n${items}\n\nTotal: ${storeConfig.currency}${total.toLocaleString()}`;
+    const items = cart.map(i => `- ${i.name} (${storeConfig.currency}${i.price})`).join('\n');
+    const mensaje = `¡Hola! Me interesa comprar:\n\n${items}\n\nTotal: ${storeConfig.currency}${total.toLocaleString()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A1A] font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-white text-gray-900 font-sans">
       
-      {/* HEADER DE ADVERTENCIA (SOLO SI NO HAY DB) */}
-      {!isFirebaseReady && (
-        <div className="bg-black text-white text-[10px] py-2 text-center font-bold tracking-[0.3em] uppercase border-b border-white/10">
-          Visualización de diseño - Modo Vercel
-        </div>
-      )}
-
-      {/* NAVBAR PREMIUM */}
-      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 md:px-12 h-24 flex items-center justify-between border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-black/20" style={{ backgroundColor: storeConfig.buttonColor }}>
-            <Store size={24} strokeWidth={2.5} />
+      {/* NAVBAR PERSONALIZADO */}
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: storeConfig.buttonColor }}>
+            <Store size={20} />
           </div>
-          <div>
-            <h1 className="font-[900] text-2xl uppercase tracking-tighter leading-none">{storeConfig.storeName}</h1>
-            <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Official Store</span>
-          </div>
+          <span className="font-black text-xl tracking-tighter uppercase italic">{storeConfig.storeName}</span>
         </div>
         
         <button 
           onClick={() => setIsCartOpen(true)} 
-          className="relative group p-4 bg-black rounded-3xl text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/10"
+          className="p-3 bg-gray-100 rounded-2xl relative hover:bg-gray-200 transition-colors"
         >
-          <ShoppingCart size={24} strokeWidth={2} />
+          <ShoppingCart size={22} strokeWidth={2.5} />
           {cart.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-600 w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black border-4 border-white animate-in zoom-in">
+            <span className="absolute -top-1 -right-1 bg-black text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold">
               {cart.length}
             </span>
           )}
         </button>
       </nav>
 
-      {/* HERO SECTION CATÁLOGO */}
-      <header className="max-w-7xl mx-auto px-6 pt-12 pb-6">
-        <div className="bg-white rounded-[3.5rem] p-12 md:p-20 border border-gray-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gray-50 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-gray-100 transition-colors"></div>
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="max-w-xl text-center md:text-left">
-              <h2 className="text-6xl md:text-8xl font-[900] mb-6 tracking-tighter leading-[0.9] uppercase italic">
-                Nuevos <br/><span className="text-gray-300">Arribos</span>
-              </h2>
-              <p className="text-gray-400 font-bold text-sm uppercase tracking-widest leading-relaxed">
-                {storeConfig.storeDescription}
-              </p>
-            </div>
-            <div className="hidden md:flex w-64 h-64 bg-black rounded-[3rem] items-center justify-center rotate-12 shadow-2xl">
-              <Store size={80} className="text-white opacity-20" />
-            </div>
-          </div>
+      {/* DISEÑO DE GRILLA QUE TRABAJAMOS ANTES */}
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        <div className="mb-12">
+          <h2 className="text-5xl font-black tracking-tight uppercase mb-2">Catálogo</h2>
+          <div className="h-2 w-20 bg-black"></div>
         </div>
-      </header>
 
-      {/* GRILLA DE PRODUCTOS */}
-      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {products.map((p, i) => (
-          <div key={i} className="bg-white rounded-[3rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col">
-            <div className="aspect-[4/5] bg-[#F1F1F1] relative overflow-hidden">
-              {p.image ? (
-                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-gray-300">
-                  <ImageIcon size={60} strokeWidth={1} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Sin imagen disponible</span>
-                </div>
-              )}
-              <div className="absolute bottom-6 left-6">
-                <span className="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-                  Top Seller
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-10 flex flex-col flex-1">
-              <div className="flex-1">
-                <h3 className="font-black text-xl uppercase tracking-tighter mb-2 group-hover:text-gray-600 transition-colors">{p.name}</h3>
-                <p className="text-gray-400 text-xs font-bold uppercase mb-6 tracking-wider">{p.desc || 'Edición Especial'}</p>
-              </div>
-              
-              <div className="flex items-center justify-between mt-auto">
-                <p className="text-3xl font-[900] tracking-tighter">
-                  <span className="text-sm font-bold mr-1 align-top mt-1 inline-block opacity-40">{storeConfig.currency}</span>
-                  {Number(p.price).toLocaleString()}
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {products.map((p, i) => (
+            <div key={i} className="group">
+              <div className="aspect-[3/4] bg-gray-50 rounded-[2rem] overflow-hidden mb-6 relative shadow-sm group-hover:shadow-xl transition-all duration-500">
+                {p.image ? (
+                  <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-200">
+                    <ImageIcon size={64} strokeWidth={1} />
+                  </div>
+                )}
                 <button 
                   onClick={() => setCart([...cart, p])}
-                  style={{ backgroundColor: storeConfig.buttonColor }}
-                  className="w-16 h-16 rounded-[1.5rem] text-white flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-xl shadow-black/10"
+                  className="absolute bottom-6 right-6 w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-black hover:text-white"
                 >
-                  <ArrowRight size={24} />
+                  <ChevronRight size={24} />
                 </button>
               </div>
+              
+              <h3 className="font-bold text-lg mb-1 uppercase tracking-tight">{p.name}</h3>
+              <p className="text-gray-400 text-xs mb-3 uppercase font-medium">{p.desc}</p>
+              <p className="text-2xl font-black">{storeConfig.currency}{Number(p.price).toLocaleString()}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </main>
 
-      {/* CARRITO SIDEBAR */}
+      {/* SIDEBAR DEL CARRITO */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setIsCartOpen(false)}></div>
-          <div className="relative bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-500">
-            
-            <div className="p-10 flex justify-between items-center border-b border-gray-50">
-              <h2 className="text-4xl font-[900] uppercase tracking-tighter">Pedido</h2>
-              <button onClick={() => setIsCartOpen(false)} className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <X size={20}/>
-              </button>
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
+          <div className="relative bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+            <div className="p-8 border-b flex justify-between items-center">
+              <h2 className="text-2xl font-black uppercase">Tu Carrito</h2>
+              <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-100 rounded-xl"><X size={24}/></button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-10 space-y-6">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-                  <ShoppingCart size={80} strokeWidth={1} className="mb-4" />
-                  <p className="font-black uppercase tracking-widest text-xs italic">Nada por aquí aún</p>
-                </div>
-              ) : (
-                cart.map((item, idx) => (
-                  <div key={idx} className="flex gap-6 items-center group">
-                    <div className="w-20 h-20 bg-gray-100 rounded-3xl flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-gray-300" />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-black text-xs uppercase tracking-tight">{item.name}</p>
-                      <p className="font-bold text-gray-400 text-sm">{storeConfig.currency}{Number(item.price).toLocaleString()}</p>
-                    </div>
-                    <button onClick={() => setCart(cart.filter((_, i) => i !== idx))} className="text-red-500 p-4 hover:bg-red-50 rounded-2xl transition-colors">
-                      <Trash2 size={20}/>
-                    </button>
+            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+              {cart.map((item, idx) => (
+                <div key={idx} className="flex gap-4 items-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden font-bold">
+                    {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-gray-300" />}
                   </div>
-                ))
-              )}
+                  <div className="flex-1">
+                    <p className="font-bold text-sm uppercase leading-tight">{item.name}</p>
+                    <p className="text-gray-400 font-bold text-xs">{storeConfig.currency}{Number(item.price).toLocaleString()}</p>
+                  </div>
+                  <button onClick={() => setCart(cart.filter((_, i) => i !== idx))} className="text-red-500 p-2"><Trash2 size={18}/></button>
+                </div>
+              ))}
             </div>
 
-            {cart.length > 0 && (
-              <div className="p-10 bg-gray-50 rounded-t-[3rem]">
-                <div className="flex justify-between items-center mb-8">
-                  <span className="font-bold text-gray-400 uppercase text-[10px] tracking-widest">Total Estimado</span>
-                  <span className="text-4xl font-[900] tracking-tighter">{storeConfig.currency}{total.toLocaleString()}</span>
-                </div>
-                <button 
-                  onClick={enviarWhatsApp}
-                  className="w-full py-7 bg-green-600 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.25em] shadow-2xl shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  <MessageCircle size={22} fill="white" />
-                  Confirmar Pedido
-                </button>
+            <div className="p-8 bg-gray-50 border-t">
+              <div className="flex justify-between items-center mb-6 font-black uppercase">
+                <span className="text-gray-400 text-xs">Total</span>
+                <span className="text-2xl">{storeConfig.currency}{total.toLocaleString()}</span>
               </div>
-            )}
+              <button 
+                onClick={enviarWhatsApp}
+                className="w-full py-5 bg-green-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={20} fill="white" /> Finalizar Pedido
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* FOOTER */}
-      <footer className="py-20 text-center opacity-20">
-        <Store size={32} className="mx-auto mb-4" />
-        <p className="text-[10px] font-black uppercase tracking-[0.5em]">Powered by Cuádralo & Vercel</p>
-      </footer>
     </div>
   );
 }
